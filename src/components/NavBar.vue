@@ -1,52 +1,25 @@
 <template>
-  <header class="navbar" :class="{ offline: !networkOnLine }">
-    <router-link to="/home">
-      <img alt="logo-bento" class="logo" src="@/assets/img/bento-starter.svg" />
-      <span class="site-name title-desktop">{{ appTitle }}</span>
-      <span class="site-name title-mobile">{{ appShortTitle }}</span>
-    </router-link>
-    <div class="links">
-      <nav class="nav-links">
-        <div class="nav-item">
-          <router-link to="/products">Products</router-link>
-        </div>
-        <div v-if="!isUserLoggedIn && networkOnLine" class="nav-item">
-          <router-link to="/login">Login</router-link>
-        </div>
-        <div
-          v-if="isUserLoggedIn && networkOnLine"
-          class="nav-item logout-item"
-          @click="logout"
-        >
-          <a>Logout</a>
-        </div>
-        <div v-if="!networkOnLine" class="nav-item offline-label">Offline</div>
-      </nav>
+  <header class="navbar" :class="{ 'dark': mode === 'dark' }">
+    <h1 class="navbar-title">Where in the world?</h1>
 
-      <img
-        v-if="isUserLoggedIn && networkOnLine"
-        class="user-picture can-hide"
-        :src="user.photoURL"
-        alt="Avatar"
-      />
-    </div>
+    <a href="#" class="mode-switcher" @click.prevent="toggleMode(mode === 'dark' ? 'light' : 'dark')">
+      <svg v-if="mode === 'light'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 16"><path fill="#fff" fill-rule="evenodd" stroke="#111517" d="M10.843 11.052c-3.108 0-5.628-2.31-5.628-5.157 0-1.075.358-2.07.97-2.895C3.752 3.756 2 5.865 2 8.35 2 11.47 4.76 14 8.163 14c2.711 0 5.013-1.605 5.837-3.836-.9.56-1.987.888-3.157.888Z" clip-rule="evenodd"/></svg>
+      <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path fill="#fff" fill-rule="evenodd" d="M13.553 13.815c-3.884 0-7.034-2.887-7.034-6.447 0-1.343.448-2.586 1.212-3.618-3.04.945-5.231 3.581-5.231 6.688 0 3.9 3.45 7.062 7.704 7.062 3.389 0 6.266-2.007 7.296-4.796a7.458 7.458 0 0 1-3.947 1.111Z" clip-rule="evenodd"/></svg>
+
+      <span>{{ mode === 'dark' ? 'Light Mode' : 'Dark Mode' }}</span>
+    </a>
   </header>
 </template>
 
 <script>
-import firebase from 'firebase/app'
-import { mapGetters, mapState } from 'vuex'
+import {mapActions, mapState} from 'vuex'
 
 export default {
   computed: {
-    ...mapGetters('authentication', ['isUserLoggedIn']),
-    ...mapState('authentication', ['user']),
-    ...mapState('app', ['networkOnLine', 'appTitle', 'appShortTitle'])
+    ...mapState('app', ['mode'])
   },
   methods: {
-    async logout() {
-      await firebase.auth().signOut()
-    }
+    ...mapActions('app', ['toggleMode'])
   }
 }
 </script>
@@ -55,133 +28,64 @@ export default {
 @import '@/theme/variables.scss';
 
 .navbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 20;
-  right: 0;
-  height: $navbar-height;
-  background-color: $navbar-color;
-  box-sizing: border-box;
-  border-bottom: 1px solid #eaecef;
-  padding: 0.7rem 1.5rem;
-  line-height: 2.2rem;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 23px 80px 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.0562443);
 
-  a {
-    display: flex;
+  @media (max-width: 767px) {
+    padding: 30px 16px;
+  }
+
+  &.dark {
+    background: $blueDark;
+
+    .navbar-title,
+    .mode-switcher span {
+      color: $white;
+    }
+  }
+
+  .navbar-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: $textDark;
+
+    @media (max-width: 767px) {
+      font-size: 14px;
+      line-height: 20px;
+    }
+  }
+
+  .mode-switcher {
+    margin: 0;
+    display: inline-flex;
     align-items: center;
-  }
+    text-decoration: none;
 
-  .title-desktop {
-    display: inline;
-  }
+    svg {
+      width: 20px;
+      margin-right: 8px;
 
-  .title-mobile {
-    display: none;
-  }
-
-  @media (max-width: 500px) {
-    padding: 0.7rem 0.7rem;
-
-    .can-hide {
-      display: none;
-    }
-
-    .title-desktop {
-      display: none;
-    }
-
-    .title-mobile {
-      display: block;
-    }
-  }
-
-  .site-name {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #2c3e50;
-    position: relative;
-  }
-
-  .logo {
-    height: 24px;
-    padding-right: 8px;
-  }
-
-  .links {
-    padding-left: 1.5rem;
-    box-sizing: border-box;
-    white-space: nowrap;
-    font-size: 0.9rem;
-    position: absolute;
-    right: 1.5rem;
-    top: 0.7rem;
-    display: flex;
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      .nav-item {
-        position: relative;
-        display: inline-block;
-        margin-left: 1.5rem;
-        line-height: 2.2rem;
-
-        &:first-child {
-          margin-left: 0;
-        }
-
-        a {
-          font-weight: 500;
-          font-size: 0.9rem;
-          text-decoration: none;
-          color: $navbar-link-color;
-          border-color: #2c3e50;
-          line-height: 1.4rem;
-          display: inline-block;
-          cursor: pointer;
-        }
-
-        @mixin activatedLink() {
-          margin-bottom: -2px;
-          border-bottom: 2px solid $vue-color;
-        }
-
-        .router-link-active {
-          @include activatedLink;
-        }
-
-        @media (hover) {
-          :hover {
-            @include activatedLink;
-          }
-        }
+      @media (max-width: 767px) {
+        width: 16px;
       }
     }
-  }
 
-  &.offline {
-    background: $navbar-offline-color;
-    .links .nav-links .nav-item a,
-    .site-name {
-      color: white;
+    span {
+      color: $textDark;
+      font-weight: 600;
+      font-size: 16px;
+      line-height: 22px;
+
+      @media (max-width: 767px) {
+        font-size: 12px;
+        line-height: 16px;
+      }
     }
-  }
-
-  .user-picture {
-    max-height: 32px;
-    margin-left: 1.5rem;
-    border-radius: 50%;
-  }
-
-  .offline-label {
-    padding: 0px 10px;
-    border: 1px solid white;
-    border-radius: 5px;
-    color: white;
-    margin-left: 1.5rem;
   }
 }
 </style>

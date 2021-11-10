@@ -1,4 +1,5 @@
-import { isNil } from 'lodash'
+import { isNil, shuffle } from 'lodash'
+import axios from 'axios'
 
 export default {
   /**
@@ -18,5 +19,22 @@ export default {
 
     commit('setRefreshingApp', true)
     state.SWRegistrationForNewContent.waiting.postMessage('skipWaiting')
+  },
+
+  toggleMode({ commit }, mode) {
+    commit('setMode', mode)
+  },
+
+  async fetchCountries({ commit }) {
+    const response = await axios.get('https://restcountries.com/v2/all?fields=flag,alpha3Code,alpha2Code,name,population,region,capital,subregion,nativeName,topLevelDomain,currencies,languages,borders')
+    const regions = []
+
+    response.data.forEach(country => {
+      if (!regions.includes(country.region))
+        regions.push(country.region)
+    })
+
+    commit('setRegions', regions.sort())
+    commit('setCountries', shuffle(response.data))
   }
 }
